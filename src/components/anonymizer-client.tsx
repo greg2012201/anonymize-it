@@ -3,10 +3,14 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import useLoadModels from "@/hooks/use-load-models";
+import useFace from "@/hooks/use-face";
 
 function AnonymizerClient() {
     const [uploadedImage, setUploadedImage] = useState<string | null>();
 
+    useLoadModels();
+    const { blurredImage, error, handleFace, isLoading, outputImageContainerRef } = useFace(uploadedImage ?? null);
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
         const file = e.target.files?.[0];
@@ -21,15 +25,24 @@ function AnonymizerClient() {
             reader.readAsDataURL(file);
         }
     };
+
+    const handleProcess = () => {
+        console.log("begin");
+        handleFace();
+    };
     return (
-        <form className="flex flex-col w-full max-w-[800px] items-center gap-1.5">
+        <div className="flex flex-col w-full max-w-[800px] items-center gap-1.5">
             <Input className="max-w-[400px]" onChange={handleFileUpload} id="file" name="file" type="file" />
             {/*  <Button type="submit">Send</Button> */}
             <div className="flex [&>img]:w-[400px] space-x-4">
-                {uploadedImage && <img src={uploadedImage} />}
-                {uploadedImage && <img src={uploadedImage} />}
+                {uploadedImage && <img ref={outputImageContainerRef} src={uploadedImage} />}
+                <img src={blurredImage} />
             </div>
-        </form>
+            {isLoading && <span>Loading...</span>}
+            <Button type="button" onClick={handleProcess} disabled={isLoading}>
+                Process
+            </Button>
+        </div>
     );
 }
 
