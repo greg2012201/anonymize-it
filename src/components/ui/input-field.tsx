@@ -34,7 +34,7 @@ function InputField({
                 className={`max-w-[400px] ${className || ""}`}
                 accept={accept}
                 multiple={multiple}
-                max={2}
+                
                 {...rest}
             />
         </div>
