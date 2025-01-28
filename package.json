@@ -1,34 +1,39 @@
 {
-    "name": "nextjs-fastapi",
-    "version": "0.2.0",
-    "private": true,
-    "scripts": {
-        "dev": "next dev",
-        "build": "next build",
-        "start": "next start",
-        "lint": "next lint"
-    },
-    "dependencies": {
-        "@radix-ui/react-label": "^2.1.0",
-        "@radix-ui/react-slot": "^1.1.0",
-        "@types/node": "22.5.5",
-        "@types/react": "18.3.8",
-        "@types/react-dom": "18.3.0",
-        "autoprefixer": "10.4.20",
-        "class-variance-authority": "^0.7.0",
-        "clsx": "^2.1.1",
-        "concurrently": "^9.0.1",
-        "eslint": "8.41.0",
-        "eslint-config-next": "13.4.4",
-        "face-api.js": "^0.22.2",
-        "lucide-react": "^0.461.0",
-        "next": "^15.0.3",
-        "postcss": "^8.4.47",
-        "react": "18.3.1",
-        "react-dom": "18.3.1",
-        "tailwind-merge": "^2.5.5",
-        "tailwindcss": "3.4.12",
-        "tailwindcss-animate": "^1.0.7",
-        "typescript": "5.6.2"
-    }
+  "name": "nextjs-fastapi",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "prettify": "prettier --write \"**/*.{ts,tsx,md,json}\""
+  },
+  "dependencies": {
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@types/node": "22.5.5",
+    "@types/react": "18.3.8",
+    "@types/react-dom": "18.3.0",
+    "autoprefixer": "10.4.20",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "concurrently": "^9.0.1",
+    "eslint": "8.41.0",
+    "eslint-config-next": "13.4.4",
+    "face-api.js": "^0.22.2",
+    "lucide-react": "^0.461.0",
+    "next": "^15.0.3",
+    "postcss": "^8.4.47",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tailwind-merge": "^2.5.5",
+    "tailwindcss": "3.4.12",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "5.6.2"
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "prettier-plugin-tailwindcss": "^0.6.11"
+  }
 }
