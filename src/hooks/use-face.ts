@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import * as faceapi from "face-api.js";
+import useLoadModels from "./use-load-models";
 
 type ImageWithDescriptor = {
   id: number;
@@ -31,7 +32,6 @@ function compareImages(
 ) {
   const threshold = 0.5;
 
-  // try to for each loop and build in detail
   const matchedImagesWithDescriptors: ImageWithDescriptor[] = [];
   targetImagesWithDescriptors.forEach(({ detections, ...rest }) => {
     const matchedDescriptors = detections.filter(({ descriptor }) => {
@@ -82,14 +82,7 @@ function useFace() {
     [],
   );
 
-  useEffect(() => {
-    const loadModels = async () => {
-      await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
-      await faceapi.nets.faceLandmark68Net.loadFromUri("/models");
-      await faceapi.nets.faceRecognitionNet.loadFromUri("/models");
-    };
-    loadModels();
-  }, []);
+  useLoadModels();
 
   const handleFace = async () => {
     if (!exampleImage) {

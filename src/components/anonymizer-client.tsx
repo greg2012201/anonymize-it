@@ -7,7 +7,6 @@ import useFace from "@/hooks/use-face";
 import ImageUploader from "./image-uploader";
 
 function AnonymizerClient() {
-  useLoadModels();
   const {
     blurredImages,
     handleFace,
