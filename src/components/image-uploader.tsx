@@ -9,7 +9,7 @@ type Props = {
 };
 
 function ImageUploader({ onImageUpload, id, label, allowMultipleFiles = false }: Props) {
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => fileUpload(e, onImageUpload);
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => await fileUpload(e, onImageUpload);
 
     return (
         <div className="flex flex-col w-full max-w-[800px] items-center gap-1.5">
