@@ -142,8 +142,6 @@ function useFace() {
         targetImagesWithDescriptors,
       );
 
-      console.log("matchedDescriptors", matchedImagesWithDescriptors);
-
       for (const targetImage of targetImagesWithDescriptors) {
         const detections =
           matchedImagesWithDescriptors.find(
