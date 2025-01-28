@@ -8,6 +8,8 @@ async function loadModels(onError: (err: any) => void) {
       faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
       faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
       faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
+      faceapi.nets.ageGenderNet.loadFromUri("/models"),
+      faceapi.nets.faceExpressionNet.loadFromUri("/models"),
     ]);
     console.log("models loaded");
     // TODO: set set loading state
