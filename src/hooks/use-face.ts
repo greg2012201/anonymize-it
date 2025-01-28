@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import * as faceapi from "face-api.js";
-import useLoadModels from "./use-load-models";
 
 type ImageWithDescriptor = {
   id: number;
@@ -81,8 +80,6 @@ function useFace() {
   const [matchingTargetImages, setMatchingTargetImages] = useState<string[]>(
     [],
   );
-
-  useLoadModels();
 
   const handleFace = async () => {
     if (!exampleImage) {
