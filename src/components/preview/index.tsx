@@ -47,9 +47,7 @@ export function Preview({
               className="h-full w-full object-cover"
             />
             <div
-              className={`absolute inset-0 flex items-center justify-center bg-black/50 text-white transition-opacity duration-300 ${
-                isHovered ? "opacity-100" : "opacity-0"
-              }`}
+              className={`absolute inset-0 flex items-center justify-center bg-black/50 text-white transition-opacity duration-300`}
             >
               <ChevronRight className="h-12 w-12" />
               <span className="sr-only">View gallery</span>
