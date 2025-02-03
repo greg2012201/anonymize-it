@@ -1,4 +1,3 @@
-import Anonymizer from "@/components/anonymizer";
 import AnonymizerClient from "@/components/anonymizer-client";
 
 function Home() {

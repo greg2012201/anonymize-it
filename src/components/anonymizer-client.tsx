@@ -4,7 +4,8 @@ import { useCallback } from "react";
 import { Button } from "./ui/button";
 import useLoadModels from "@/hooks/use-load-models";
 import useFace from "@/hooks/use-face";
-import ImageUploader from "./image-uploader";
+import { Preview } from "./preview";
+import { ImageUploader } from "./preview/image-uploader";
 
 function AnonymizerClient() {
   useLoadModels();
@@ -14,6 +15,9 @@ function AnonymizerClient() {
     loadExampleImage,
     loadTargetImages,
     isLoading,
+    exampleImage,
+    targetImages,
+    matchingTargetImages,
   } = useFace();
 
   const handleProcess = () => {
@@ -26,28 +30,23 @@ function AnonymizerClient() {
     },
     [loadTargetImages],
   );
-
+  console.log("matchingTargetImages", matchingTargetImages);
   return (
     <div className="flex w-full max-w-[800px] flex-col items-center gap-1.5">
-      <div className="flex space-x-4">
-        {" "}
-        <ImageUploader
-          id="example-face-uploader"
-          label="image with the example faces"
-          onImageUpload={(img) => loadExampleImage(img[0])}
-        />
-        <ImageUploader
-          id="to-anonymize"
-          allowMultipleFiles
-          label="images that should be anonymized"
-          onImageUpload={handleOnImageUpload}
-        />
-      </div>{" "}
-      <div className="flex space-x-4 [&>img]:w-[400px]">
-        {blurredImages.map((blurredImage) => (
-          <img key={blurredImage} src={blurredImage} />
-        ))}
-      </div>
+      <Preview
+        exampleImagePlaceholder={
+          <ImageUploader
+            type="single"
+            onImageUpload={(img) => loadExampleImage(img[0])}
+          />
+        }
+        targetImagesPlaceholder={
+          <ImageUploader type="multiple" onImageUpload={handleOnImageUpload} />
+        }
+        images={blurredImages?.length ? blurredImages : targetImages}
+        exampleImage={exampleImage}
+      />
+      <div className="flex space-x-4"></div>{" "}
       {isLoading && <span>Loading...</span>}
       <Button type="button" onClick={handleProcess} disabled={isLoading}>
         Process

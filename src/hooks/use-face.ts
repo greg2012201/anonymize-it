@@ -184,6 +184,8 @@ function useFace() {
     matchingTargetImages,
     loadExampleImage: setExampleImage,
     loadTargetImages: setTargetImages,
+    exampleImage,
+    targetImages,
   };
 }
 
