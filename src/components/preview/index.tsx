@@ -5,7 +5,7 @@ import Image from "next/image";
 import { type ReactNode } from "react";
 
 type SplitViewImageProps = {
-  exampleImage?: string;
+  exampleImage?: string | null;
   images: string[];
 } & Record<"exampleImagePlaceholder" | "targetImagesPlaceholder", ReactNode>;
 
