@@ -10,14 +10,13 @@ import { ImageUploader } from "./preview/image-uploader";
 function AnonymizerClient() {
   useLoadModels();
   const {
-    blurredImages,
+    outputImages,
     handleFace,
     loadExampleImage,
     loadTargetImages,
     isLoading,
     exampleImage,
     targetImages,
-    matchingTargetImages,
   } = useFace();
 
   const handleProcess = () => {
@@ -30,7 +29,6 @@ function AnonymizerClient() {
     },
     [loadTargetImages],
   );
-  console.log("matchingTargetImages", matchingTargetImages);
   return (
     <div className="flex w-full max-w-[800px] flex-col items-center gap-1.5">
       <Preview
@@ -43,7 +41,7 @@ function AnonymizerClient() {
         targetImagesPlaceholder={
           <ImageUploader type="multiple" onImageUpload={handleOnImageUpload} />
         }
-        images={blurredImages?.length ? blurredImages : targetImages}
+        images={outputImages?.length ? outputImages : targetImages}
         exampleImage={exampleImage}
       />
       <div className="flex space-x-4"></div>{" "}

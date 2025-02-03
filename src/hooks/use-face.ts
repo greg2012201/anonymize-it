@@ -72,14 +72,11 @@ async function extractAllFaces(image: HTMLImageElement) {
 }
 
 function useFace() {
-  const [blurredImages, setBlurredImages] = useState<string[]>([]);
   const [exampleImage, setExampleImage] = useState<string | null>(null);
   const [targetImages, setTargetImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [matchingTargetImages, setMatchingTargetImages] = useState<string[]>(
-    [],
-  );
+  const [outputImages, setOutputImages] = useState<string[]>([]);
 
   const handleFace = async () => {
     if (!exampleImage) {
@@ -140,6 +137,7 @@ function useFace() {
           )?.detections || [];
 
         if (!detections?.length) {
+          updatedTargetImages.push(targetImage.src);
           continue;
         }
         const targetImgElement = targetImage.imgElement;
@@ -167,7 +165,7 @@ function useFace() {
         updatedTargetImages.push(canvas.toDataURL());
       }
 
-      setBlurredImages(updatedTargetImages);
+      setOutputImages(updatedTargetImages);
     } catch (err) {
       setError("Error processing image");
       console.error(err);
@@ -178,10 +176,9 @@ function useFace() {
 
   return {
     handleFace,
-    blurredImages,
     isLoading,
     error,
-    matchingTargetImages,
+    outputImages,
     loadExampleImage: setExampleImage,
     loadTargetImages: setTargetImages,
     exampleImage,
