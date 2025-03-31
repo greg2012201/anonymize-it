@@ -15,7 +15,7 @@ faceapi.env.monkeyPatch({
 console.log("WORKER LOADED");
 
 self.onmessage = async (event) => {
-  const { type, data } = event.data;
+  const { type } = event.data;
   const getCanvas = () => {
     try {
       const imgData = new ImageData(
