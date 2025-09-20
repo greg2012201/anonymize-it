@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { Button } from "./ui/button";
 import useLoadModels from "@/hooks/use-load-models";
-import useFace from "@/hooks/use-face";
+import useFace from "@/face-detection/hooks/use-face";
 import { Preview } from "./preview";
 import { ImageUploader } from "./preview/image-uploader";
 

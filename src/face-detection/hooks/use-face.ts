@@ -1,6 +1,7 @@
 import { use, useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
-import FaceDetectionWotker from "../workers/face-detection.worker";
+import FaceDetectionWotker from "../face-detection.worker";
+import EventManager, { detectExampleFace, loadModels } from "../events";
 
 type ImageWithDescriptor = {
   id: number;
@@ -117,11 +118,14 @@ function useFace() {
   const [error, setError] = useState<string | null>(null);
   const [outputImages, setOutputImages] = useState<string[]>([]);
   const workerRef = useRef<Worker | null>(null);
+  const eventManagerRef = useRef<EventManager | null>(null);
 
   useEffect(() => {
     // Initialize the worker
     workerRef.current = new FaceDetectionWotker();
-    workerRef.current?.postMessage({ type: "LOAD_MODELS" });
+    loadModels(workerRef?.current);
+    // workerRef.current?.postMessage({ type: "LOAD_MODELS" });
+    // eventManagerRef.current?.loadModels();
     // Cleanup
     return () => {
       workerRef.current?.terminate();
@@ -158,15 +162,23 @@ function useFace() {
       );
       // ===============
 
-      workerRef.current.postMessage(
-        {
-          type: "DETECT_EXAMPLE_FACE",
+      await detectExampleFace(workerRef.current, {
+        message: {
           w: exampleImageElement.width,
           h: exampleImageElement.height,
           buffer: imgData?.data.buffer,
         },
-        [imgData?.data.buffer],
-      );
+        transfelable: [imgData?.data.buffer],
+      });
+      // workerRef.current.postMessage(
+      //   {
+      //     type: "DETECT_EXAMPLE_FACE",
+      //     w: exampleImageElement.width,
+      //     h: exampleImageElement.height,
+      //     buffer: imgData?.data.buffer,
+      //   },
+      //   [imgData?.data.buffer],
+      // );
       // THE SAME DATA BUFFER CAN BE TRANSFERED ONLY ONCE
       // workerRef.current.postMessage(
       //   {
