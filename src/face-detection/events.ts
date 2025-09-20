@@ -60,8 +60,8 @@ export function detectExampleFace(
         }
       };
     },
-    () => {
-      console.error("error detecting example face");
+    (error) => {
+      console.error("error detecting example face", error);
     },
   );
 }
