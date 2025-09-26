@@ -40,9 +40,37 @@ class WorkerClass {
 
     return exampleFace;
   }
+  async extractAllFaces(event: MessageEvent) {
+    const canvas = getCanvas(event);
+    const detections = await faceapi
+      .detectAllFaces(canvas)
+      .withFaceLandmarks()
+      .withAgeAndGender()
+      .withFaceExpressions()
+      .withFaceDescriptors();
 
-  logSomething(args: string) {
-    console.log("WorkerClass logSomething", args);
+    return detections;
+  }
+
+  async detectMatchingFaces(event: MessageEvent) {
+    const canvas = getCanvas(event);
+    const allFaces = event?.data?.allFaces as Float32Array[];
+    const detections = await faceapi
+      .detectAllFaces(canvas)
+      .withFaceLandmarks()
+      .withFaceDescriptors();
+    const threshold = 0.5;
+
+    const matchedDescriptors = detections.filter(({ descriptor }) => {
+      return allFaces.some((exampleDescriptor) => {
+        const distance = faceapi.euclideanDistance(
+          exampleDescriptor,
+          descriptor,
+        );
+        return distance < threshold;
+      });
+    });
+    return matchedDescriptors;
   }
 }
 
