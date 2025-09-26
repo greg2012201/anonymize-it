@@ -1,4 +1,5 @@
 import * as faceapi from "face-api.js";
+import * as Comlink from "comlink";
 
 const MODEL_PATH =
   process.env.NEXT_PUBLIC_MODEL_PATH || "http://localhost:3000/models";
@@ -12,64 +13,54 @@ faceapi.env.monkeyPatch({
   },
 });
 
-console.log("WORKER LOADED");
-
-self.onmessage = async (event) => {
-  const { type } = event.data;
-  const getCanvas = () => {
-    try {
-      const imgData = new ImageData(
-        new Uint8ClampedArray(event?.data?.buffer),
-        event?.data?.w,
-        event?.data?.h,
-      );
-
-      return faceapi.createCanvasFromMedia(imgData);
-    } catch (error) {
-      console.error(
-        `error executing event: ${event.type} properties: w:${event?.data?.w}, h:${typeof event?.data?.h}`,
-        error,
-      );
-      return new OffscreenCanvas(20, 20);
-    }
-  };
-
+const getCanvas = (event: MessageEvent) => {
   try {
-    switch (type) {
-      case "LOAD_MODELS":
-        await Promise.all([
-          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_PATH),
-          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_PATH),
-          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_PATH),
-          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_PATH),
-          faceapi.nets.ageGenderNet.loadFromUri(MODEL_PATH),
-          faceapi.nets.faceExpressionNet.loadFromUri(MODEL_PATH),
-        ]);
-        console.log("models loaded");
-        self.postMessage({ type: "MODELS_LOADED" });
-        break;
+    const imgData = new ImageData(
+      new Uint8ClampedArray(event?.data?.buffer),
+      event?.data?.w,
+      event?.data?.h,
+    );
 
-      case "DETECT_EXAMPLE_FACE":
-        const exampleFace = await faceapi
-          .detectSingleFace(getCanvas())
-          .withFaceLandmarks()
-          .withFaceDescriptor();
-        console.log("example", exampleFace);
-        self.postMessage({ type: "EXAMPLE_FACE_DETECTED", data: exampleFace });
-        break;
-
-      case "DETECT_ALL_FACES":
-        const allFaces = await faceapi
-          .detectAllFaces(getCanvas())
-          .withFaceLandmarks()
-          .withAgeAndGender()
-          .withFaceExpressions()
-          .withFaceDescriptors();
-        self.postMessage({ type: "ALL_FACES_DETECTED", data: allFaces });
-        break;
-    }
+    return faceapi.createCanvasFromMedia(imgData);
   } catch (error) {
-    console.error("error in worker", error);
-    self.postMessage({ type: "WORKER_ERROR", error });
+    console.error(
+      `error executing event: ${event.type} properties: w:${event?.data?.w}, h:${typeof event?.data?.h}`,
+      error,
+    );
+    return new OffscreenCanvas(20, 20);
   }
 };
+class WorkerClass {
+  async detectExampleFace(event: MessageEvent) {
+    const canvas = getCanvas(event);
+    const exampleFace = await faceapi
+      .detectSingleFace(canvas)
+      .withFaceLandmarks()
+      .withFaceDescriptor();
+
+    return exampleFace;
+  }
+
+  logSomething(args: string) {
+    console.log("WorkerClass logSomething", args);
+  }
+}
+
+async function loadModels() {
+  console.log("WorkerClass init...");
+  await Promise.all([
+    faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_PATH),
+    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_PATH),
+    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_PATH),
+    faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_PATH),
+    faceapi.nets.ageGenderNet.loadFromUri(MODEL_PATH),
+    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_PATH),
+  ]);
+  console.log("worker initialized and models loaded");
+}
+
+(async () => {
+  await loadModels();
+  const worker = new WorkerClass();
+  Comlink.expose(worker);
+})();
