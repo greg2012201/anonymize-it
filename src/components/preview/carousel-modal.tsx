@@ -6,7 +6,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Carousel,
@@ -30,24 +29,24 @@ export function CarouselModal({
 }: CarouselModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[700px]">
+      <DialogContent className="w-[95vw] max-w-7xl h-[90vh] max-h-[900px]">
         <DialogHeader>
           <DialogTitle>Image Carousel</DialogTitle>
           <DialogDescription>
             Browse through the images using the carousel controls.
           </DialogDescription>
         </DialogHeader>
-        <Carousel className="mx-auto w-full max-w-xs">
-          <CarouselContent>
+        <Carousel className="mx-auto w-full h-full flex flex-col">
+          <CarouselContent className="h-[calc(90vh-8rem)] sm:h-[calc(90vh-6rem)]">
             {images.map((src, index) => (
-              <CarouselItem key={index}>
-                <div className="p-1">
+              <CarouselItem key={index} className="flex items-center justify-center">
+                <div className="relative w-full h-full flex items-center justify-center">
                   <Image
                     src={src || "/placeholder.svg"}
                     alt={`Carousel image ${index + 1}`}
-                    width={600}
-                    height={400}
-                    className="w-full rounded-md object-cover"
+                    width={1920}
+                    height={1080}
+                    className="max-w-full max-h-full w-auto h-auto rounded-md object-contain"
                   />
                 </div>
               </CarouselItem>
