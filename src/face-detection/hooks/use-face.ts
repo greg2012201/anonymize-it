@@ -3,19 +3,6 @@ import * as faceapi from "face-api.js";
 import * as Comlink from "comlink";
 import { DataTransfer, FaceDetectionWorker } from "../types";
 
-type ImageWithDescriptor = {
-  id: number;
-  descriptors: Float32Array<ArrayBufferLike>[];
-  detections: faceapi.WithFaceDescriptor<
-    faceapi.WithFaceLandmarks<
-      {
-        detection: faceapi.FaceDetection;
-      },
-      faceapi.FaceLandmarks68
-    >
-  >[];
-};
-
 async function base64ToImageElement(
   base64Image: string,
 ): Promise<HTMLImageElement> {
