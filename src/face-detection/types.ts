@@ -61,7 +61,7 @@ export type ImageWithDescriptor = {
   id: number;
   src: string;
   imgElement: HTMLImageElement;
-  descriptors: Float32Array<ArrayBufferLike>[];
+  descriptors: Float32Array[];
   detections: faceapi.WithFaceDescriptor<
     faceapi.WithFaceLandmarks<
       { detection: faceapi.FaceDetection },
