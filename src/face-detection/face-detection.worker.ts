@@ -39,8 +39,6 @@ const getImage = (transferObj: DataTransfer) => {
   }
 };
 
-// TODO: move serializers to ./serializers.ts
-
 class WorkerClass implements FaceDetectionWorker {
   async detectExampleFace(transferObj: DataTransfer) {
     console.log("detectExampleFace", transferObj);
