@@ -7,8 +7,7 @@ import {
 } from "./types";
 import { serializeFaceApiResult } from "./worker/serializers";
 
-const MODEL_PATH =
-  process.env.NEXT_PUBLIC_MODEL_PATH || "http://localhost:3000/models";
+const MODEL_PATH = `/models`;
 
 faceapi.env.setEnv(faceapi.env.createNodejsEnv());
 
