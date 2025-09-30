@@ -1,5 +1,10 @@
 import * as faceapi from "face-api.js";
 import * as Comlink from "comlink";
+import {
+  DataTransfer,
+  FaceDetectionWorker,
+  ImageWithDescriptors,
+} from "./types";
 
 const MODEL_PATH =
   process.env.NEXT_PUBLIC_MODEL_PATH || "http://localhost:3000/models";
@@ -7,56 +12,115 @@ const MODEL_PATH =
 faceapi.env.setEnv(faceapi.env.createNodejsEnv());
 
 faceapi.env.monkeyPatch({
+  //@ts-ignore
   Canvas: OffscreenCanvas,
+  //@ts-ignore
   createCanvasElement: () => {
     return new OffscreenCanvas(480, 270);
   },
 });
 
-const getCanvas = (event: MessageEvent) => {
+const getImage = (transferObj: DataTransfer) => {
   try {
     const imgData = new ImageData(
-      new Uint8ClampedArray(event?.data?.buffer),
-      event?.data?.w,
-      event?.data?.h,
+      new Uint8ClampedArray(transferObj.buffer || []),
+      transferObj.w,
+      transferObj.h,
     );
 
     return faceapi.createCanvasFromMedia(imgData);
   } catch (error) {
     console.error(
-      `error executing event: ${event.type} properties: w:${event?.data?.w}, h:${typeof event?.data?.h}`,
+      "Error creating image from buffer, using empty canvas instead",
       error,
     );
     return new OffscreenCanvas(20, 20);
   }
 };
-class WorkerClass {
-  async detectExampleFace(event: MessageEvent) {
-    const canvas = getCanvas(event);
+function serializeFaceApiResult(result: any): any {
+  if (!result) return result;
+
+  const out: Record<string, any> = {};
+
+  if ("detection" in result)
+    out.detection = serializeDetection(result.detection);
+  if ("descriptor" in result)
+    out.descriptor = ArrayBuffer.isView(result.descriptor)
+      ? Array.from(result.descriptor) // or keep Float32Array for zero-copy
+      : result.descriptor;
+  if ("expression" in result) out.expression = result.expression;
+  if ("landmarks" in result)
+    out.landmarks = serializeLandmarks(result.landmarks);
+  if ("alignedRect" in result)
+    out.alignedRect = serializeDetection(result.alignedRect);
+
+  return out;
+}
+
+function serializeDetection(det: any): any {
+  if (!det) return det;
+
+  const box = det.box ?? det._box;
+  return {
+    score: det.score ?? det._score,
+    classScore: det.classScore ?? det._classScore,
+    className: det.className ?? det._className,
+    box: box ? serializeBox(box) : undefined,
+    imageDims: det.imageDims ?? det._imageDims,
+  };
+}
+
+function serializeBox(box: any): any {
+  return {
+    x: box.x ?? box._x,
+    y: box.y ?? box._y,
+    width: box.width ?? box._width,
+    height: box.height ?? box._height,
+  };
+}
+
+function serializeLandmarks(landmarks: any): any {
+  if (!landmarks?.positions) return landmarks;
+  return {
+    positions: landmarks.positions.map((pt: any) => ({
+      x: pt.x ?? pt._x,
+      y: pt.y ?? pt._y,
+    })),
+  };
+}
+
+// Register the handler
+
+class WorkerClass implements FaceDetectionWorker {
+  async detectExampleFace(transferObj: DataTransfer) {
+    console.log("detectExampleFace", transferObj);
+    const canvas = getImage(transferObj);
     const exampleFace = await faceapi
-      .detectSingleFace(canvas)
+      .detectSingleFace(canvas as faceapi.TNetInput)
       .withFaceLandmarks()
       .withFaceDescriptor();
 
-    return exampleFace;
+    return serializeFaceApiResult(exampleFace);
   }
-  async extractAllFaces(event: MessageEvent) {
-    const canvas = getCanvas(event);
+  async extractAllFaces(transferObj: DataTransfer) {
+    const canvas = getImage(transferObj);
     const detections = await faceapi
-      .detectAllFaces(canvas)
+      .detectAllFaces(canvas as faceapi.TNetInput)
       .withFaceLandmarks()
       .withAgeAndGender()
       .withFaceExpressions()
       .withFaceDescriptors();
 
-    return detections;
+    return detections.map(serializeFaceApiResult);
   }
 
-  async detectMatchingFaces(event: MessageEvent) {
-    const canvas = getCanvas(event);
-    const allFaces = event?.data?.allFaces as Float32Array[];
+  async detectMatchingFaces(
+    transferObj: DataTransfer & { allFaces: Float32Array[] },
+  ) {
+    const canvas = getImage(transferObj);
+    const allFaces = transferObj.allFaces;
     const detections = await faceapi
-      .detectAllFaces(canvas)
+      .detectAllFaces(canvas as faceapi.TNetInput)
       .withFaceLandmarks()
       .withFaceDescriptors();
     const threshold = 0.5;
@@ -70,7 +134,26 @@ class WorkerClass {
         return distance < threshold;
       });
     });
-    return matchedDescriptors;
+    return matchedDescriptors.map(serializeFaceApiResult);
+  }
+
+  async drawOutputImage(imageWithDescriptors: ImageWithDescriptors) {
+    const canvas = new OffscreenCanvas(
+      imageWithDescriptors.imgElement.w,
+      imageWithDescriptors.imgElement.h,
+    );
+    const ctxRes = canvas.getContext("2d")!;
+    const detections = imageWithDescriptors.detections;
+    const imgElement = getImage(imageWithDescriptors.imgElement);
+    ctxRes.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+    for (const detection of detections) {
+      const { x, y, width, height } = detection?.detection?.box;
+      ctxRes.filter = "blur(60px)";
+      ctxRes.drawImage(imgElement, x, y, width, height, x, y, width, height);
+      ctxRes.filter = "none";
+    }
+
+    return canvas.convertToBlob();
   }
 }
 
@@ -92,3 +175,4 @@ async function loadModels() {
   const worker = new WorkerClass();
   Comlink.expose(worker);
 })();
+4;
