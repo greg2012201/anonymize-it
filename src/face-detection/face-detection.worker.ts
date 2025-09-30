@@ -89,7 +89,7 @@ class WorkerClass implements FaceDetectionWorker {
       imageWithDescriptors.imgElement.w,
       imageWithDescriptors.imgElement.h,
     );
-    const ctxRes = canvas.getContext("2d")!;
+    const ctxRes = canvas.getContext("2d", { willReadFrequently: true })!;
     const detections = imageWithDescriptors.detections;
     const imgElement = getImage(imageWithDescriptors.imgElement);
     ctxRes.drawImage(imgElement, 0, 0, canvas.width, canvas.height);

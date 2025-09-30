@@ -52,7 +52,7 @@ async function getImageWithDetections(
     imgElement.height,
   );
 
-  const ctx = offscreenCanvas.getContext("2d");
+  const ctx = offscreenCanvas.getContext("2d", { willReadFrequently: true });
   ctx?.drawImage(imgElement, 0, 0, imgElement.width, imgElement.height);
   const imgData = ctx?.getImageData(0, 0, imgElement.width, imgElement.height);
   const matchedDescriptors = await detector({
@@ -76,7 +76,7 @@ function getSendableImageData(imageData: HTMLImageElement) {
     imageData.width,
     imageData.height,
   );
-  const ctx = offscreenCanvas.getContext("2d");
+  const ctx = offscreenCanvas.getContext("2d", { willReadFrequently: true });
   ctx?.drawImage(imageData, 0, 0, imageData.width, imageData.height);
   const imgData = ctx?.getImageData(0, 0, imageData.width, imageData.height);
   return {
