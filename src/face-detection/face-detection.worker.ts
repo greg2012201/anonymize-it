@@ -41,7 +41,6 @@ const getImage = (transferObj: DataTransfer) => {
 
 class WorkerClass implements FaceDetectionWorker {
   async detectExampleFace(transferObj: DataTransfer) {
-    console.log("detectExampleFace", transferObj);
     const canvas = getImage(transferObj);
     const exampleFace = await faceapi
       .detectSingleFace(canvas as faceapi.TNetInput)
