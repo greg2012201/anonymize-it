@@ -92,10 +92,36 @@ class WorkerClass implements FaceDetectionWorker {
     const detections = imageWithDescriptors.detections;
     const imgElement = getImage(imageWithDescriptors.imgElement);
     ctxRes.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+
     for (const detection of detections) {
       const { x, y, width, height } = detection?.detection?.box;
-      ctxRes.filter = "blur(60px)";
-      ctxRes.drawImage(imgElement, x, y, width, height, x, y, width, height);
+
+      const padding = 0.2;
+      const expandedX = Math.max(0, x - width * padding);
+      const expandedY = Math.max(0, y - height * padding);
+      const expandedWidth = Math.min(
+        canvas.width - expandedX,
+        width * (1 + 2 * padding),
+      );
+      const expandedHeight = Math.min(
+        canvas.height - expandedY,
+        height * (1 + 2 * padding),
+      );
+
+      for (let i = 0; i < 3; i++) {
+        ctxRes.filter = "blur(50px)";
+        ctxRes.drawImage(
+          imgElement,
+          expandedX,
+          expandedY,
+          expandedWidth,
+          expandedHeight,
+          expandedX,
+          expandedY,
+          expandedWidth,
+          expandedHeight,
+        );
+      }
       ctxRes.filter = "none";
     }
 
