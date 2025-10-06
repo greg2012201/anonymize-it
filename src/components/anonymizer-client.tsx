@@ -2,9 +2,10 @@
 
 import { useCallback } from "react";
 import { Button } from "./ui/button";
-import useFace from "@/face-detection/hooks/use-face";
+
 import { Preview } from "./preview";
 import { ImageUploader } from "./preview/image-uploader";
+import useFace from "@/hooks/use-face";
 
 function AnonymizerClient() {
   const {
