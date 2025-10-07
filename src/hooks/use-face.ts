@@ -88,11 +88,10 @@ function useFace() {
 
       const exampleImageElement = await base64ToImageElement(exampleImage);
 
-      const exampleFace = await extractExampleFace(exampleImageElement);
       const allFaces = await extractAllFaces(exampleImageElement);
-      console.log("allFaces", allFaces);
-      if (!exampleFace) {
-        setError("No face detected in the example image");
+
+      if (!allFaces.length) {
+        setError("No faces detected in the example image");
         return;
       }
 
