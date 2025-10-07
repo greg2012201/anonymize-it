@@ -57,8 +57,6 @@ async function extractAllFaces(image: HTMLImageElement) {
   const detections = await faceapi
     .detectAllFaces(image)
     .withFaceLandmarks()
-    .withAgeAndGender()
-    .withFaceExpressions()
     .withFaceDescriptors();
 
   return detections;
@@ -101,10 +99,7 @@ function useFace() {
           const imgElement = new Image();
           imgElement.src = src;
           await imgElement.decode();
-          const detections = await faceapi
-            .detectAllFaces(imgElement)
-            .withFaceLandmarks()
-            .withFaceDescriptors();
+          const detections = await extractAllFaces(imgElement);
 
           return {
             id,
