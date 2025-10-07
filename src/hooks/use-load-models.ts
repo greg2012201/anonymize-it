@@ -8,10 +8,7 @@ async function loadModels(onError: (err: any) => void) {
     await Promise.all([
       faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_PATH),
       faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_PATH),
-      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_PATH),
       faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_PATH),
-      faceapi.nets.ageGenderNet.loadFromUri(MODEL_PATH),
-      faceapi.nets.faceExpressionNet.loadFromUri(MODEL_PATH),
     ]);
     console.log("models loaded");
   } catch (err) {
