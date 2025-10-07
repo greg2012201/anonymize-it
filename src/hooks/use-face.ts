@@ -53,13 +53,6 @@ function compareImages(
   return matchedImagesWithDescriptors;
 }
 
-function extractExampleFace(image: HTMLImageElement) {
-  return faceapi
-    .detectSingleFace(image)
-    .withFaceLandmarks()
-    .withFaceDescriptor();
-}
-
 async function extractAllFaces(image: HTMLImageElement) {
   const detections = await faceapi
     .detectAllFaces(image)
