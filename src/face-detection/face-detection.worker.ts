@@ -53,8 +53,6 @@ class WorkerClass implements FaceDetectionWorker {
     const detections = await faceapi
       .detectAllFaces(canvas as faceapi.TNetInput)
       .withFaceLandmarks()
-      .withAgeAndGender()
-      .withFaceExpressions()
       .withFaceDescriptors();
 
     return detections.map(serializeFaceApiResult);
@@ -63,12 +61,8 @@ class WorkerClass implements FaceDetectionWorker {
   async detectMatchingFaces(
     transferObj: DataTransfer & { allFaces: Float32Array[] },
   ) {
-    const canvas = getImage(transferObj);
     const allFaces = transferObj.allFaces;
-    const detections = await faceapi
-      .detectAllFaces(canvas as faceapi.TNetInput)
-      .withFaceLandmarks()
-      .withFaceDescriptors();
+    const detections = await this.extractAllFaces(transferObj);
     const threshold = 0.5;
 
     const matchedDescriptors = detections.filter(({ descriptor }) => {
@@ -134,10 +128,7 @@ async function loadModels() {
   await Promise.all([
     faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_PATH),
     faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_PATH),
-    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_PATH),
     faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_PATH),
-    faceapi.nets.ageGenderNet.loadFromUri(MODEL_PATH),
-    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_PATH),
   ]);
   console.log("worker initialized and models loaded");
 }
