@@ -6,8 +6,10 @@ import { Button } from "./ui/button";
 import { Preview } from "./preview";
 import { ImageUploader } from "./preview/image-uploader";
 import useFace from "@/hooks/use-face";
+import useLoadModels from "@/hooks/use-load-models";
 
 function AnonymizerClient() {
+  useLoadModels();
   const {
     outputImages,
     handleFace,
