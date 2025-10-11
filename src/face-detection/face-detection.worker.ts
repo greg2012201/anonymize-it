@@ -138,4 +138,3 @@ async function loadModels() {
   const worker = new WorkerClass();
   Comlink.expose(worker);
 })();
-4;
