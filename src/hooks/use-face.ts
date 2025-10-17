@@ -12,17 +12,21 @@ type ImageWithDescriptor = {
       faceapi.FaceLandmarks68
     >
   >[];
+  imgElement: HTMLCanvasElement;
 };
 
-async function base64ToImageElement(
-  base64Image: string,
-): Promise<HTMLImageElement> {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image();
-    img.src = base64Image;
-    img.onload = () => resolve(img);
-    img.onerror = (error) => reject(error);
-  });
+async function createCanvasFromDataUrl(
+  dataUrl: string,
+): Promise<HTMLCanvasElement> {
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  const bitmap = await createImageBitmap(blob);
+  const canvas = document.createElement("canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  return canvas;
 }
 
 function compareImages(
@@ -53,9 +57,11 @@ function compareImages(
   return matchedImagesWithDescriptors;
 }
 
-async function extractAllFaces(image: HTMLImageElement) {
+async function extractAllFaces(
+  image: HTMLImageElement | HTMLCanvasElement | ImageBitmap,
+) {
   const detections = await faceapi
-    .detectAllFaces(image)
+    .detectAllFaces(image as any)
     .withFaceLandmarks()
     .withFaceDescriptors();
 
@@ -77,9 +83,9 @@ function useFace() {
       setIsLoading(true);
       setError(null);
 
-      const exampleImageElement = await base64ToImageElement(exampleImage);
+      const exampleCanvas = await createCanvasFromDataUrl(exampleImage);
 
-      const allFaces = await extractAllFaces(exampleImageElement);
+      const allFaces = await extractAllFaces(exampleCanvas);
 
       if (!allFaces.length) {
         setError("No faces detected in the example image");
@@ -96,17 +102,15 @@ function useFace() {
       }));
       const targetImagesWithDescriptors = await Promise.all(
         targetImagesWithId.map(async ({ id, src }) => {
-          const imgElement = new Image();
-          imgElement.src = src;
-          await imgElement.decode();
-          const detections = await extractAllFaces(imgElement);
+          const canvas = await createCanvasFromDataUrl(src);
+          const detections = await extractAllFaces(canvas);
 
           return {
             id,
             detections,
             descriptors: detections.map((detection) => detection.descriptor),
             src,
-            imgElement,
+            imgElement: canvas,
           };
         }),
       );
@@ -128,8 +132,8 @@ function useFace() {
           continue;
         }
         const targetImgElement = targetImage.imgElement;
-        canvas.width = targetImgElement.naturalWidth;
-        canvas.height = targetImgElement.naturalHeight;
+        canvas.width = targetImgElement.width;
+        canvas.height = targetImgElement.height;
         ctx.drawImage(targetImgElement, 0, 0, canvas.width, canvas.height);
 
         for (const detection of detections) {
