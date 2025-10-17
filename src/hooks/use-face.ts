@@ -57,11 +57,9 @@ function compareImages(
   return matchedImagesWithDescriptors;
 }
 
-async function extractAllFaces(
-  image: HTMLImageElement | HTMLCanvasElement | ImageBitmap,
-) {
+async function extractAllFaces(image: HTMLCanvasElement) {
   const detections = await faceapi
-    .detectAllFaces(image as any)
+    .detectAllFaces(image)
     .withFaceLandmarks()
     .withFaceDescriptors();
 
