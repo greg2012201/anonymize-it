@@ -1,21 +1,11 @@
 import * as faceapi from "face-api.js";
 
-export type DataTransfer = {
-  w: number;
-  h: number;
-  buffer: ArrayBuffer | undefined;
-  transferrable: (ArrayBuffer | undefined)[];
-};
+export type DataTransfer = ArrayBuffer | undefined;
 
 export type ImageWithDescriptors = {
   id: number;
   src: string;
-  imgElement: {
-    w: number;
-    h: number;
-    buffer: ArrayBuffer | undefined;
-    transferrable: (ArrayBuffer | undefined)[];
-  };
+  imgElement: DataTransfer;
   detections: faceapi.WithFaceDescriptor<
     faceapi.WithFaceLandmarks<
       {

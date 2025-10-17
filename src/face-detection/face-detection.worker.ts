@@ -1,6 +1,6 @@
 import * as faceapi from "face-api.js";
 import * as Comlink from "comlink";
-import {
+import type {
   DataTransfer,
   FaceDetectionWorker,
   ImageWithDescriptors,
@@ -20,15 +20,17 @@ faceapi.env.monkeyPatch({
   },
 });
 
-const getImage = (transferObj: DataTransfer) => {
+const createCanvas = async (transferObj: DataTransfer) => {
   try {
-    const imgData = new ImageData(
-      new Uint8ClampedArray(transferObj.buffer || []),
-      transferObj.w,
-      transferObj.h,
-    );
+    const buf = transferObj as ArrayBuffer | undefined;
+    if (!buf) return new OffscreenCanvas(20, 20);
 
-    return faceapi.createCanvasFromMedia(imgData);
+    const blob = new Blob([buf]);
+    const bitmap = await createImageBitmap(blob);
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height);
+    return canvas;
   } catch (error) {
     console.error(
       "Error creating image from buffer, using empty canvas instead",
@@ -40,18 +42,18 @@ const getImage = (transferObj: DataTransfer) => {
 
 class WorkerClass implements FaceDetectionWorker {
   async detectExampleFace(transferObj: DataTransfer) {
-    const canvas = getImage(transferObj);
+    const canvas = await createCanvas(transferObj);
     const exampleFace = await faceapi
-      .detectSingleFace(canvas as faceapi.TNetInput)
+      .detectSingleFace(canvas as unknown as faceapi.TNetInput)
       .withFaceLandmarks()
       .withFaceDescriptor();
 
     return serializeFaceApiResult(exampleFace);
   }
   async extractAllFaces(transferObj: DataTransfer) {
-    const canvas = getImage(transferObj);
+    const canvas = await createCanvas(transferObj);
     const detections = await faceapi
-      .detectAllFaces(canvas as faceapi.TNetInput)
+      .detectAllFaces(canvas as unknown as faceapi.TNetInput)
       .withFaceLandmarks()
       .withFaceDescriptors();
 
@@ -78,14 +80,21 @@ class WorkerClass implements FaceDetectionWorker {
   }
 
   async drawOutputImage(imageWithDescriptors: ImageWithDescriptors) {
+    const decodedCanvas = await createCanvas(imageWithDescriptors.imgElement);
+
     const canvas = new OffscreenCanvas(
-      imageWithDescriptors.imgElement.w,
-      imageWithDescriptors.imgElement.h,
+      decodedCanvas.width,
+      decodedCanvas.height,
     );
     const ctxRes = canvas.getContext("2d", { willReadFrequently: true })!;
     const detections = imageWithDescriptors.detections;
-    const imgElement = getImage(imageWithDescriptors.imgElement);
-    ctxRes.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+    ctxRes.drawImage(
+      decodedCanvas as unknown as CanvasImageSource,
+      0,
+      0,
+      canvas.width,
+      canvas.height,
+    );
 
     for (const detection of detections) {
       const { x, y, width, height } = detection?.detection?.box;
@@ -105,7 +114,7 @@ class WorkerClass implements FaceDetectionWorker {
       for (let i = 0; i < 3; i++) {
         ctxRes.filter = "blur(50px)";
         ctxRes.drawImage(
-          imgElement,
+          decodedCanvas as unknown as CanvasImageSource,
           expandedX,
           expandedY,
           expandedWidth,

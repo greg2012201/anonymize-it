@@ -3,17 +3,6 @@ import * as faceapi from "face-api.js";
 import * as Comlink from "comlink";
 import { DataTransfer, FaceDetectionWorker } from "../types";
 
-async function base64ToImageElement(
-  base64Image: string,
-): Promise<HTMLImageElement> {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image();
-    img.src = base64Image;
-    img.onload = () => resolve(img);
-    img.onerror = (error) => reject(error);
-  });
-}
-
 async function getImageWithDetections(
   allFaces: Float32Array[],
   targetImageData: { id: number; src: string },
@@ -29,48 +18,22 @@ async function getImageWithDetections(
   >,
 ) {
   const { id, src } = targetImageData;
-  const imgTargetElement = new Image();
-  imgTargetElement.src = src;
-  await imgTargetElement.decode();
+  const arrayBuffer = await (await fetch(src)).arrayBuffer();
 
-  const imgElement = imgTargetElement;
-  const offscreenCanvas = new OffscreenCanvas(
-    imgElement.width,
-    imgElement.height,
-  );
+  const arrayBufferForDetector = arrayBuffer.slice(0);
 
-  const ctx = offscreenCanvas.getContext("2d", { willReadFrequently: true });
-  ctx?.drawImage(imgElement, 0, 0, imgElement.width, imgElement.height);
-  const imgData = ctx?.getImageData(0, 0, imgElement.width, imgElement.height);
-  const matchedDescriptors = await detector({
+  const payload = {
     allFaces,
-    w: imgElement.width,
-    h: imgElement.height,
-    buffer: imgData?.data.buffer,
-    transferrable: [imgData?.data.buffer],
-  });
+    buffer: arrayBufferForDetector,
+  } as unknown as DataTransfer & { allFaces: Float32Array[] };
+
+  const matchedDescriptors = await detector(payload as any);
 
   return {
     id,
     src,
-    imgElement: getSendableImageData(imgElement),
+    imgElement: arrayBuffer,
     detections: matchedDescriptors,
-  };
-}
-
-function getSendableImageData(imageData: HTMLImageElement) {
-  const offscreenCanvas = new OffscreenCanvas(
-    imageData.width,
-    imageData.height,
-  );
-  const ctx = offscreenCanvas.getContext("2d", { willReadFrequently: true });
-  ctx?.drawImage(imageData, 0, 0, imageData.width, imageData.height);
-  const imgData = ctx?.getImageData(0, 0, imageData.width, imageData.height);
-  return {
-    w: imageData.width,
-    h: imageData.height,
-    buffer: imgData?.data.buffer,
-    transferrable: [imgData?.data.buffer],
   };
 }
 
@@ -113,18 +76,16 @@ function useFace() {
       setIsLoading(true);
       setError(null);
 
-      const exampleImageElement = await base64ToImageElement(exampleImage);
+      const exampleArrayBuffer = await (
+        await fetch(exampleImage)
+      ).arrayBuffer();
 
       const exampleFace = await api
-        .detectExampleFace(getSendableImageData(exampleImageElement))
+        .detectExampleFace(exampleArrayBuffer)
         .catch((err) => {
           console.warn("detectExampleFace call failed", err);
         });
-
-      const allFaces = await api.extractAllFaces(
-        getSendableImageData(exampleImageElement),
-      );
-
+      const allFaces = await api.extractAllFaces(exampleArrayBuffer);
       if (!exampleFace) {
         setError("No face detected in the example image");
         return;
@@ -136,13 +97,12 @@ function useFace() {
       }));
 
       for (const targetImage of targetImagesWithId) {
-        const mageWithDescriptors = await getImageWithDetections(
+        const imageWithDescriptors = await getImageWithDetections(
           allFaces.map((face) => face.descriptor),
           targetImage,
           api.detectMatchingFaces,
         );
-
-        const output = await api.drawOutputImage(mageWithDescriptors);
+        const output = await api.drawOutputImage(imageWithDescriptors);
 
         const url = URL.createObjectURL(output);
         setOutputImages((prevState) => [...prevState, url]);
