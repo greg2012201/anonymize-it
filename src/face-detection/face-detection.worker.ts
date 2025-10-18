@@ -23,13 +23,16 @@ faceapi.env.monkeyPatch({
 const createCanvas = async (transferObj: DataTransfer) => {
   try {
     const buf = transferObj as ArrayBuffer | undefined;
-    if (!buf) return new OffscreenCanvas(20, 20);
+    if (!buf) {
+      return new OffscreenCanvas(20, 20);
+    }
 
     const blob = new Blob([buf]);
     const bitmap = await createImageBitmap(blob);
     const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
     const ctx = canvas.getContext("2d")!;
     ctx.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height);
+    console.log("Creating canvas from buffer of size:", ctx);
     return canvas;
   } catch (error) {
     console.error(
@@ -47,7 +50,6 @@ class WorkerClass implements FaceDetectionWorker {
       .detectSingleFace(canvas as unknown as faceapi.TNetInput)
       .withFaceLandmarks()
       .withFaceDescriptor();
-
     return serializeFaceApiResult(exampleFace);
   }
   async extractAllFaces(transferObj: DataTransfer) {
@@ -56,15 +58,15 @@ class WorkerClass implements FaceDetectionWorker {
       .detectAllFaces(canvas as unknown as faceapi.TNetInput)
       .withFaceLandmarks()
       .withFaceDescriptors();
-
     return detections.map(serializeFaceApiResult);
   }
 
-  async detectMatchingFaces(
-    transferObj: DataTransfer & { allFaces: Float32Array[] },
-  ) {
+  async detectMatchingFaces(transferObj: {
+    allFaces: Float32Array[];
+    buffer: ArrayBuffer;
+  }) {
     const allFaces = transferObj.allFaces;
-    const detections = await this.extractAllFaces(transferObj);
+    const detections = await this.extractAllFaces(transferObj.buffer);
     const threshold = 0.5;
 
     const matchedDescriptors = detections.filter(({ descriptor }) => {

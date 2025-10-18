@@ -21,9 +21,10 @@ export interface FaceDetectionWorker {
     transferObj: DataTransfer,
   ) => Promise<Float32Array[] | null>;
 
-  detectMatchingFaces: (
-    transferObj: DataTransfer & { allFaces: Float32Array[] },
-  ) => Promise<
+  detectMatchingFaces: (transferObj: {
+    allFaces: Float32Array[];
+    buffer: ArrayBuffer;
+  }) => Promise<
     faceapi.WithFaceDescriptor<
       faceapi.WithFaceLandmarks<
         { detection: faceapi.FaceDetection },
