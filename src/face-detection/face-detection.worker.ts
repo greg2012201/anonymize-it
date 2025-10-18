@@ -44,14 +44,6 @@ const createCanvas = async (transferObj: DataTransfer) => {
 };
 
 class WorkerClass implements FaceDetectionWorker {
-  async detectExampleFace(transferObj: DataTransfer) {
-    const canvas = await createCanvas(transferObj);
-    const exampleFace = await faceapi
-      .detectSingleFace(canvas as unknown as faceapi.TNetInput)
-      .withFaceLandmarks()
-      .withFaceDescriptor();
-    return serializeFaceApiResult(exampleFace);
-  }
   async extractAllFaces(transferObj: DataTransfer) {
     const canvas = await createCanvas(transferObj);
     const detections = await faceapi
