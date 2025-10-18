@@ -83,9 +83,9 @@ function useFace() {
 
       const exampleCanvas = await createCanvasFromDataUrl(exampleImage);
 
-      const allFaces = await extractAllFaces(exampleCanvas);
+      const allExampleFaces = await extractAllFaces(exampleCanvas);
 
-      if (!allFaces.length) {
+      if (!allExampleFaces.length) {
         setError("No faces detected in the example image");
         return;
       }
@@ -114,7 +114,7 @@ function useFace() {
       );
 
       const matchedImagesWithDescriptors = compareImages(
-        allFaces.map((face) => face.descriptor),
+        allExampleFaces.map((face) => face.descriptor),
         targetImagesWithDescriptors,
       );
 
