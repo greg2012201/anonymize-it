@@ -6,9 +6,10 @@ import { DataTransfer, FaceDetectionWorker } from "../types";
 async function getImageWithDetections(
   allFaces: Float32Array[],
   targetImageData: { id: number; src: string },
-  detector: (
-    transferObj: DataTransfer & { allFaces: Float32Array[] },
-  ) => Promise<
+  detector: (transferObj: {
+    allFaces: Float32Array[];
+    buffer: ArrayBuffer;
+  }) => Promise<
     faceapi.WithFaceDescriptor<
       faceapi.WithFaceLandmarks<
         { detection: faceapi.FaceDetection },
@@ -25,7 +26,7 @@ async function getImageWithDetections(
   const payload = {
     allFaces,
     buffer: arrayBufferForDetector,
-  } as unknown as DataTransfer & { allFaces: Float32Array[] };
+  } as { allFaces: Float32Array[]; buffer: ArrayBuffer };
 
   const matchedDescriptors = await detector(payload as any);
 
