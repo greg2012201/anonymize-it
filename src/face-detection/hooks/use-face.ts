@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
 import * as Comlink from "comlink";
-import { DataTransfer, FaceDetectionWorker } from "../types";
+import type { FaceDetectionWorker } from "../types";
 
 async function getImageWithDetections(
   allFaces: Float32Array[],
@@ -81,17 +81,7 @@ function useFace() {
         await fetch(exampleImage)
       ).arrayBuffer();
 
-      const exampleFace = await api
-        .detectExampleFace(exampleArrayBuffer)
-        .catch((err) => {
-          console.warn("detectExampleFace call failed", err);
-        });
-      const allFaces = await api.extractAllFaces(exampleArrayBuffer);
-      if (!exampleFace) {
-        setError("No face detected in the example image");
-        return;
-      }
-
+      const allExampleFaces = await api.extractAllFaces(exampleArrayBuffer);
       const targetImagesWithId = targetImages.map((targetImage, index) => ({
         id: index,
         src: targetImage,
@@ -99,7 +89,7 @@ function useFace() {
 
       for (const targetImage of targetImagesWithId) {
         const imageWithDescriptors = await getImageWithDetections(
-          allFaces.map((face) => face.descriptor),
+          allExampleFaces.map((face) => face.descriptor),
           targetImage,
           api.detectMatchingFaces,
         );

@@ -17,10 +17,6 @@ export type ImageWithDescriptors = {
 };
 
 export interface FaceDetectionWorker {
-  detectExampleFace: (
-    transferObj: DataTransfer,
-  ) => Promise<Float32Array[] | null>;
-
   detectMatchingFaces: (transferObj: {
     allFaces: Float32Array[];
     buffer: ArrayBuffer;
