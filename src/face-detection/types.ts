@@ -18,8 +18,8 @@ export type ImageWithDescriptors = {
 
 export interface FaceDetectionWorker {
   detectMatchingFaces: (transferObj: {
-    allFaces: Float32Array[];
-    buffer: ArrayBuffer;
+    allExampleFaces: Float32Array[];
+    allTargetImages: ArrayBuffer;
   }) => Promise<
     faceapi.WithFaceDescriptor<
       faceapi.WithFaceLandmarks<

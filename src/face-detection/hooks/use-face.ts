@@ -4,11 +4,11 @@ import * as Comlink from "comlink";
 import type { FaceDetectionWorker } from "../types";
 
 async function getImageWithDetections(
-  allFaces: Float32Array[],
+  allExampleFaces: Float32Array[],
   targetImageData: { id: number; src: string },
   detector: (transferObj: {
-    allFaces: Float32Array[];
-    buffer: ArrayBuffer;
+    allExampleFaces: Float32Array[];
+    allTargetImages: ArrayBuffer;
   }) => Promise<
     faceapi.WithFaceDescriptor<
       faceapi.WithFaceLandmarks<
@@ -24,11 +24,11 @@ async function getImageWithDetections(
   const arrayBufferForDetector = arrayBuffer.slice(0);
 
   const payload = {
-    allFaces,
-    buffer: arrayBufferForDetector,
-  } as { allFaces: Float32Array[]; buffer: ArrayBuffer };
+    allExampleFaces,
+    allTargetImages: arrayBufferForDetector,
+  };
 
-  const matchedDescriptors = await detector(payload as any);
+  const matchedDescriptors = await detector(payload);
 
   return {
     id,
