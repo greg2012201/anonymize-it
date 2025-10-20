@@ -32,7 +32,6 @@ const createCanvas = async (transferObj: DataTransfer) => {
     const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
     const ctx = canvas.getContext("2d")!;
     ctx.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height);
-    console.log("Creating canvas from buffer of size:", ctx);
     return canvas;
   } catch (error) {
     console.error(
@@ -54,15 +53,15 @@ class WorkerClass implements FaceDetectionWorker {
   }
 
   async detectMatchingFaces(transferObj: {
-    allFaces: Float32Array[];
-    buffer: ArrayBuffer;
+    allExampleFaces: Float32Array[];
+    allTargetImages: ArrayBuffer;
   }) {
-    const allFaces = transferObj.allFaces;
-    const detections = await this.extractAllFaces(transferObj.buffer);
+    const allExampleFaces = transferObj.allExampleFaces;
+    const detections = await this.extractAllFaces(transferObj.allTargetImages);
     const threshold = 0.5;
 
     const matchedDescriptors = detections.filter(({ descriptor }) => {
-      return allFaces.some((exampleDescriptor) => {
+      return allExampleFaces.some((exampleDescriptor) => {
         const distance = faceapi.euclideanDistance(
           exampleDescriptor,
           descriptor,
