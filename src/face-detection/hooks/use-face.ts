@@ -70,6 +70,7 @@ function useFace() {
       return;
     }
     try {
+      console.time("face handler performance");
       const api = Comlink.wrap<Comlink.Remote<FaceDetectionWorker>>(
         workerRef.current as any,
       );
@@ -98,6 +99,7 @@ function useFace() {
         const url = URL.createObjectURL(output);
         setOutputImages((prevState) => [...prevState, url]);
       }
+      console.timeEnd("face handler performance");
     } catch (err) {
       setError("Error processing image");
       console.error(err);
